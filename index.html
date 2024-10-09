@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Abhishek Lunagariya</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;600&family=Raleway:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Abhishek's Portfolio</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="projects.html">Projects</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="skills.html">Skills & Experience</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Welcome Section -->
+    <section id="home" class="welcome-section">
+        <div class="container text-center">
+            <!-- Profile Photo placed on the side -->
+            <div class="photo-frame side-profile" data-aos="fade-up" data-aos-delay="200">
+                <img src="assets/images/your-photo.jpg" alt="Abhishek Lunagariya" class="profile-photo">
+            </div>
+            
+            <!-- Hover-Animated Name -->
+            <h1 class="display-4 name-title" data-aos="fade-up" data-aos-delay="300">Hello, I'm Abhishek Lunagariya</h1>
+            <p class="lead" data-aos="fade-up" data-aos-delay="400">A passionate programmer and web developer</p>
+
+            <!-- Call to Action Button -->
+            <a href="projects.html" class="btn btn-lg btn-primary mt-3 animated-btn" data-aos="zoom-in" data-aos-delay="500">
+                View My Projects
+            </a>
+        </div>
+    </section>
+
+    <!-- Background Design -->
+    <div class="background-pattern"></div>
+
+    <footer class="bg-dark text-white text-center py-3">
+        <p>&copy; 2024 Abhishek Lunagariya. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 1200,
+            once: true
+        });
+    </script>
+</body>
+</html>
