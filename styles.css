@@ -1564,6 +1564,71 @@ body.drift-2 .stack-section {
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
+/* Header controls (status + buttons) */
+.oracle-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Voice toggle button */
+.oracle-voice-toggle {
+  border: none;
+  background: transparent;
+  color: #e0ffe7;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 2px;
+  line-height: 1;
+  opacity: 0.8;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.oracle-voice-toggle:hover {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.oracle-voice-toggle.muted {
+  opacity: 0.55;
+}
+
+/* Suggestion chips row */
+.oracle-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 10px 8px;
+  border-top: 1px solid rgba(0, 255, 156, 0.18);
+  background: radial-gradient(
+    circle at 100% 0,
+    rgba(0, 255, 156, 0.08),
+    transparent 55%
+  );
+}
+
+/* Individual chips */
+.oracle-suggestion-chip {
+  border-radius: 999px;
+  border: 1px solid rgba(0, 255, 156, 0.4);
+  background: rgba(0, 0, 0, 0.85);
+  color: #bfffe6;
+  font-size: 0.7rem;
+  padding: 4px 9px;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+}
+
+.oracle-suggestion-chip:hover {
+  background: rgba(0, 255, 156, 0.14);
+  border-color: #ffffff;
+  transform: translateY(-1px);
+}
+
+
 .oracle-chat-close:hover {
   opacity: 1;
   transform: scale(1.1);

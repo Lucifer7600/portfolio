@@ -843,48 +843,98 @@ function attachResistiveBehavior() {
 attachResistiveBehavior();
 
 // ========== ORACLE PORTFOLIO CHAT ==========
+
 const oracleToggle = document.getElementById("oracleToggle");
 const oracleChat = document.getElementById("oracleChat");
 const oracleChatClose = document.getElementById("oracleChatClose");
 const oracleMessages = document.getElementById("oracleMessages");
-const oracleForm = document.getElementById("oracleForm");
-const oracleInput = document.getElementById("oracleInput");
+const oracleVoiceToggle = document.getElementById("oracleVoiceToggle");
+const oracleSuggestions = document.getElementById("oracleSuggestions");
 
-// Conversation memory for summaries / export
-const oracleHistory = [];
+// Make sure we always bind to the chat widget form/input (not the old overlay)
+const oracleForm =
+  oracleChat && oracleChat.querySelector("form")
+    ? oracleChat.querySelector("form")
+    : null;
+const oracleInput =
+  oracleChat && oracleChat.querySelector("input")
+    ? oracleChat.querySelector("input")
+    : null;
 
-// Open / close handlers
-function openOracleChat() {
-  if (!oracleChat) return;
-  oracleChat.classList.remove("hidden");
-  oracleChat.classList.add("active");
-  safePlay(audioGlitch);
-  if (oracleInput) {
-    oracleInput.focus();
+// ------- Voice (text-to-speech) setup -------
+
+let oracleVoiceEnabled = false;
+const oracleSpeechSupported = "speechSynthesis" in window;
+
+function stripHtml(html) {
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return div.textContent || div.innerText || "";
+}
+
+function speakOracle(text) {
+  if (!oracleVoiceEnabled || !oracleSpeechSupported) return;
+
+  const plain = stripHtml(text);
+  if (!plain) return;
+
+  // Stop any current speech
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(plain);
+  utterance.rate = 1.02;
+  utterance.pitch = 1;
+  utterance.volume = 1;
+  window.speechSynthesis.speak(utterance);
+}
+
+if (oracleVoiceToggle) {
+  if (!oracleSpeechSupported) {
+    // Hide toggle if browser doesn't support TTS
+    oracleVoiceToggle.style.display = "none";
+  } else {
+    // Initial state: muted (🔈)
+    oracleVoiceToggle.textContent = "🔈";
+
+    oracleVoiceToggle.addEventListener("click", () => {
+      oracleVoiceEnabled = !oracleVoiceEnabled;
+      oracleVoiceToggle.classList.toggle("muted", !oracleVoiceEnabled);
+      oracleVoiceToggle.textContent = oracleVoiceEnabled ? "🔊" : "🔈";
+
+      if (!oracleVoiceEnabled) {
+        window.speechSynthesis.cancel();
+      }
+    });
   }
 }
 
-// Alias so CLI or future features can call the same thing
-function openAgentChat() {
-  openOracleChat();
+// ------- Chat open/close -------
+
+function openOracleChat() {
+  if (!oracleChat) return;
+  oracleChat.classList.remove("hidden");
+  oracleChat.classList.add("open");
+  if (oracleInput) {
+    setTimeout(() => oracleInput.focus(), 50);
+  }
 }
 
 function closeOracleChat() {
   if (!oracleChat) return;
-  oracleChat.classList.remove("active");
-  setTimeout(() => {
-    oracleChat.classList.add("hidden");
-  }, 180);
+  oracleChat.classList.add("hidden");
+  oracleChat.classList.remove("open");
 }
 
-// Helper: add message to chat + log to history
 function addOracleMessage(text, sender = "oracle") {
   if (!oracleMessages) return;
 
   const wrapper = document.createElement("div");
   wrapper.classList.add("oracle-message");
-  if (sender === "user") wrapper.classList.add("oracle-message-user");
-  else wrapper.classList.add("oracle-message-oracle");
+  if (sender === "user") {
+    wrapper.classList.add("oracle-message-user");
+  } else {
+    wrapper.classList.add("oracle-message-oracle");
+  }
 
   const label = document.createElement("p");
   label.classList.add("oracle-message-label");
@@ -898,174 +948,47 @@ function addOracleMessage(text, sender = "oracle") {
   oracleMessages.appendChild(wrapper);
   oracleMessages.scrollTop = oracleMessages.scrollHeight;
 
-  // Store plain text version for summaries / export
-  const plain = text.replace(/<[^>]+>/g, "").trim();
-  oracleHistory.push({
-    sender,
-    text: plain,
-    time: new Date()
-  });
-}
-
-// Helper: smooth scroll to a section
-function oracleScrollTo(sectionId) {
-  const el = document.getElementById(sectionId);
-  if (!el) return;
-  el.scrollIntoView({ behavior: "smooth", block: "center" });
-}
-
-// Helper: temporary glow highlight
-function oracleHighlight(selector) {
-  const el = document.querySelector(selector);
-  if (!el) return;
-  el.classList.add("oracle-highlight");
-  setTimeout(() => {
-    el.classList.remove("oracle-highlight");
-  }, 1800);
-}
-
-// Helper: copy chat transcript to clipboard
-function oracleCopyTranscript() {
-  if (!navigator.clipboard || !oracleHistory.length) return;
-
-  const lines = oracleHistory.map((m) => {
-    const t = m.time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    return `[${t}] ${m.sender.toUpperCase()}: ${m.text}`;
-  });
-
-  navigator.clipboard.writeText(lines.join("\n")).catch(() => {
-    // Fail silently – the Oracle doesn't complain about OS clipboard permissions
-  });
-}
-
-// Helper: summarize what the user has been asking
-function oracleSummarizeHistory() {
-  if (!oracleHistory.length) {
-    return "We haven’t written much into this timeline yet. Ask a few real questions, then I’ll show you the pattern.";
+  if (sender === "oracle") {
+    speakOracle(text);
   }
-
-  const topics = new Set();
-
-  oracleHistory.forEach((m) => {
-    const t = m.text.toLowerCase();
-    if (t.includes("jobflow")) topics.add("JobFlow");
-    if (t.includes("habit")) topics.add("Habit Tracker OS");
-    if (t.includes("crime")) topics.add("Online Crime Management System");
-    if (t.includes(".net") || t.includes("c#") || t.includes("backend")) topics.add(".NET / backend work");
-    if (t.includes("skill") || t.includes("stack") || t.includes("tech")) topics.add("skills & tech stack");
-    if (t.includes("role") || t.includes("job") || t.includes("fit")) topics.add("roles & career fit");
-  });
-
-  const topicText = topics.size
-    ? Array.from(topics).join(", ")
-    : "a few different angles of this simulation";
-
-  return `So far, your questions run through ${topicText}. The pattern is simple: you’re not just browsing, you’re testing how this system thinks.`;
 }
 
-// Core Oracle brain: returns { text, action? }
+// Oracle response logic tuned to your portfolio
 function getOracleReply(rawQuestion) {
   const q = rawQuestion.toLowerCase().trim();
-  const result = { text: "", action: null };
 
+  // Empty / nonsense
   if (!q) {
-    result.text =
-      "Silence is also a choice. But it doesn’t get you closer to the truth. Ask something real.";
-    return result;
+    return "Silence is also a choice. Ask me about your skills, your projects, or where you should go next.";
   }
 
-  // Simple emotional state detection
-  const emotionalWords = [
-    "confused",
-    "lost",
-    "overwhelmed",
-    "stuck",
-    "anxious",
-    "worried",
-    "scared",
-    "nervous",
-    "no idea",
-    "dont know",
-    "don't know"
-  ];
-
-  if (emotionalWords.some((w) => q.includes(w))) {
-    result.text =
-      "You’re not broken. You’re just in between states: who you were, and who you’re becoming. Take one small, clear question and ask it. The rest will follow.";
-    return result;
-  }
-
-  // Commands: help / what can you do
-  if (q === "help" || q === "/help" || q.includes("what can you do")) {
-    result.text =
-      "Inside this simulation I can:\n<br><br>• Decode Abhishek’s skills, stack, and experience.<br>• Explain projects like JobFlow or Habit Tracker OS.<br>• Suggest roles that fit this profile.<br>• Navigate you to sections of the page.<br>• Summarize our conversation so far.<br><br>Try asking: “Show me the skills”, “Tell me about JobFlow”, “What roles fit this profile?”, “How do I contact him?”, or type <code>clear</code> to wipe this console.";
-    return result;
-  }
-
-  // Commands: clear / reset chat
+  // About Abhishek
   if (
-    q === "clear" ||
-    q === "/clear" ||
-    q === "reset" ||
-    q === "reset chat" ||
-    q === "cls"
-  ) {
-    result.text = "Timeline wiped. We start fresh from here.";
-    result.action = () => {
-      if (!oracleMessages) return;
-      oracleMessages.innerHTML = "";
-      addOracleMessage(
-        "SYSTEM INITIALIZED<br>Ah… I’ve been expecting you. Sit. Let’s see what truth you’re seeking today.",
-        "oracle"
-      );
-    };
-    return result;
-  }
-
-  // Commands: export / copy transcript
-  if (
-    q.includes("copy chat") ||
-    q.includes("copy conversation") ||
-    q.includes("save chat") ||
-    q.includes("save conversation") ||
-    q.includes("export chat") ||
-    q === "copy"
-  ) {
-    result.text =
-      "I’ve pushed this timeline to your clipboard. Paste it wherever you need to keep the trace.";
-    result.action = () => {
-      oracleCopyTranscript();
-    };
-    return result;
-  }
-
-  // Commands: summary of our chat
-  if (
-    q.includes("summary") ||
-    q.includes("summarize") ||
-    q.includes("recap") ||
-    q.includes("what have we talked") ||
-    q.includes("what did we talk")
-  ) {
-    result.text = oracleSummarizeHistory();
-    return result;
-  }
-
-  // Identity / who is Abhishek
-  if (
-    q.includes("who is abhishek") ||
     q.includes("who are you") ||
-    q.includes("identity") ||
-    q.includes("whoami") ||
-    q.includes("who am i")
+    q.includes("who is abhishek") ||
+    q.includes("about you")
   ) {
-    result.text =
-      "Abhishek is a systems thinker disguised as a software developer: C#, .NET, REST APIs, SQL, and tools that actually make people’s work easier.";
-    result.action = () => {
-      oracleScrollTo("identitySection");
-      oracleHighlight("#identitySection");
-    };
-    return result;
+    return "In this corner of the Matrix, Abhishek is the one weaving logic into systems – a software developer focused on C#, .NET, APIs, and data that actually makes sense.";
+  }
+
+  // Recruiter / hiring view
+  if (
+    q.includes("recruiter") ||
+    q.includes("hiring manager") ||
+    q.includes("screening") ||
+    q.includes("shortlist")
+  ) {
+    return "Imagine you’re the recruiter inside this simulation:<br><br>• You’d notice consistent experience with C#, .NET, SQL, and supporting real users.<br>• You’d see projects like JobFlow and Habit Tracker that solve real problems, not just tutorial exercises.<br><br>Read this portfolio as evidence of how Abhishek thinks under changing requirements.";
+  }
+
+  // Interview prep
+  if (q.includes("interview prep") || (q.includes("interview") && q.includes("prepare"))) {
+    return "Two paths for your next interview:<br><br>• Technical – be ready to walk through JobFlow and Habit Tracker: why they were built, key design choices, and what you’d improve next.<br>• Behavioral – tell stories about debugging production issues, learning new tools fast, and working with non-technical stakeholders.<br><br>If you want, ask me for 'JobFlow talking points' or 'habit tracker story' and I’ll outline them.";
+  }
+
+  // Strengths / weaknesses
+  if (q.includes("strength") || q.includes("weakness")) {
+    return "Strengths: ownership of backend logic, clean data models, and the patience to debug messy systems.<br>“Weakness”: saying yes to too many interesting problems at once – now managed by prioritizing impact first, curiosity second.";
   }
 
   // Skills / stack
@@ -1077,91 +1000,43 @@ function getOracleReply(rawQuestion) {
     q.includes("c#") ||
     q.includes("c sharp")
   ) {
-    result.text =
-      "Most of his cycles run in the .NET space – C#, ASP.NET, REST APIs, SQL, and backend logic. The UI is there, but the real work happens where data, rules, and behavior intersect.";
-    result.action = () => {
-      oracleScrollTo("stackSection");
-      oracleHighlight("#stackSection");
-    };
-    return result;
+    return "Abhishek’s code runs mainly in the .NET realm – C#, ASP.NET, REST APIs, SQL, and backend logic. The front-end is there too, but the real fun happens where data, rules, and behavior meet.";
   }
 
-  // Projects: JobFlow
-  if (q.includes("jobflow") || q.includes("job flow")) {
-    result.text =
-      "JobFlow is a job-search operating system: a .NET 8 application that tracks applications, scores job matches, and exports data to Excel. Not just a tracker, but a control panel for a job hunt.";
-    result.action = () => {
-      oracleScrollTo("projectsSection");
-      oracleHighlight('.project-card[data-sim="jobs"] .project-frame');
-    };
-    return result;
+  // Projects / JobFlow
+  if (q.includes("jobflow")) {
+    return "JobFlow is a job-search operating system: a .NET 8 application that tracks applications, scores job matches, and exports the data to Excel. Think of it as a control panel for your job hunt, not just a spreadsheet.";
   }
 
-  // Projects: Habit Tracker
-  if (q.includes("habit tracker") || q.includes("habit tracking") || q.includes("habits")) {
-    result.text =
-      "Habit Tracker OS is a behavioral sandbox – Android plus Firebase, where habits become records and streaks become data you can actually act on.";
-    result.action = () => {
-      oracleScrollTo("projectsSection");
-      oracleHighlight('.project-card[data-sim="habits"] .project-frame');
-    };
-    return result;
+  if (q.includes("habit tracker") || q.includes("habit tracking")) {
+    return "The Habit Tracker is a behavioral sandbox – Android + Firebase, where habits become records, and streaks become data you can actually act on.";
   }
 
-  // Projects: Crime system
-  if (q.includes("crime") || q.includes("crime management")) {
-    result.text =
-      "The Online Crime Management System replaces paper and chaos with a searchable record of cases. A full-stack web app that treats every report like data, not just a document.";
-    result.action = () => {
-      oracleScrollTo("projectsSection");
-      oracleHighlight('.project-card[data-sim="crime"] .project-frame');
-    };
-    return result;
-  }
-
-  // General projects / portfolio
   if (q.includes("project") || q.includes("projects") || q.includes("portfolio")) {
-    result.text =
-      "You’re seeing a curated slice of simulations – JobFlow, Habit Tracker OS, and more – chosen to show how he designs data flows, APIs, and interfaces that stay readable even when requirements shift.";
-    result.action = () => {
-      oracleScrollTo("projectsSection");
-      oracleHighlight(".projects-section");
-    };
-    return result;
+    return "You’re looking at a curated simulation: JobFlow, Habit Tracker, and other systems that show how Abhishek designs data flows, APIs, and interfaces that stay readable even when requirements shift.";
   }
 
   // Roles / what jobs fit
   if (q.includes("role") || q.includes("job") || q.includes("position") || q.includes("fit")) {
-    result.text =
-      "Two main paths appear:<br><br>• One where he grows as a backend / .NET developer, owning APIs, data models, and system behavior.<br>• Another where he moves into full-stack, still anchored in C#, but shaping the journey from UI to database.";
-    return result;
+    return "Two paths emerge:<br><br>• One where Abhishek grows as a backend / .NET developer, owning APIs and data models.<br>• Another where he evolves into a full-stack engineer, still anchored in C#, but shaping the whole flow from UI to database.";
   }
 
   // Contact
   if (q.includes("contact") || q.includes("reach") || q.includes("email")) {
-    result.text =
-      "Follow the signal to the Contact section or use the email endpoint in the hero. Important conversations rarely start by accident.";
-    result.action = () => {
-      oracleScrollTo("contactSection");
-      oracleHighlight("#contactSection");
-    };
-    return result;
+    return "Follow the signal to the Contact section or use the email link in the hero. The right conversations rarely start by accident.";
   }
 
   // CV / resume
   if (q.includes("cv") || q.includes("résumé") || q.includes("resume")) {
-    result.text =
-      "The résumé is the compressed version of this simulation. Use it when filters decide who gets in. Use this portfolio when someone is actually ready to see how he thinks.";
-    return result;
+    return "The résumé is the compressed version of this simulation. Use it when ATS filters the world. Use this portfolio when a human is ready to see how the system actually thinks.";
   }
 
-  // Default Oracle answer
-  result.text =
-    "Every question branches the timeline a little. If you want useful branches, aim them at skills, projects, or the kind of work you want this profile to do for you.";
-  return result;
+  // General Oracle fallback
+  return "Every question you ask rewrites a small piece of your future. Here, the useful ones are usually about skills, projects, and the kind of work you want to wake up to. Try asking from that angle.";
 }
 
-// Event wiring
+// ------- Event wiring -------
+
 if (oracleToggle) {
   oracleToggle.addEventListener("click", () => {
     if (oracleChat && oracleChat.classList.contains("hidden")) {
@@ -1178,7 +1053,7 @@ if (oracleChatClose) {
   });
 }
 
-// ESC to close chat (only if open)
+// ESC to close chat
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && oracleChat && !oracleChat.classList.contains("hidden")) {
     closeOracleChat();
@@ -1197,14 +1072,25 @@ if (oracleForm && oracleInput) {
 
     setTimeout(() => {
       const reply = getOracleReply(value);
-      const replyText = typeof reply === "string" ? reply : reply.text;
-      addOracleMessage(replyText, "oracle");
-
-      if (reply && typeof reply.action === "function") {
-        // Small delay so the message renders before the scroll / highlight kicks in
-        setTimeout(() => reply.action(), 220);
-      }
+      addOracleMessage(reply, "oracle");
     }, 350);
+  });
+}
+
+// Suggestion chips → auto-ask
+if (oracleSuggestions && oracleForm && oracleInput) {
+  oracleSuggestions.addEventListener("click", (event) => {
+    const chip = event.target.closest(".oracle-suggestion-chip");
+    if (!chip) return;
+
+    const question = chip.getAttribute("data-question");
+    if (!question) return;
+
+    oracleInput.value = question;
+    oracleInput.focus();
+    oracleForm.dispatchEvent(
+      new Event("submit", { cancelable: true, bubbles: true })
+    );
   });
 }
 

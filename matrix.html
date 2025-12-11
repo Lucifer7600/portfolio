@@ -414,22 +414,36 @@
 
   </div>
   <!-- ORACLE PORTFOLIO AGENT CHAT -->
-  <button id="oracleToggle" class="oracle-toggle" type="button">
-    <span class="oracle-toggle-dot"></span>
-    <span class="oracle-toggle-text">ASK THE ORACLE</span>
-  </button>
+<button id="oracleToggle" class="oracle-toggle" type="button">
+  <span class="oracle-toggle-dot"></span>
+  <span class="oracle-toggle-text">ASK THE ORACLE</span>
+</button>
 
-  <div id="oracleChat" class="oracle-chat hidden">
-    <div class="oracle-chat-inner">
-      <header class="oracle-chat-header">
-        <div class="oracle-chat-title-block">
-          <span class="oracle-chat-title">THE ORACLE</span>
-          <span class="oracle-chat-subtitle">Predictive Portfolio Interface</span>
-        </div>
+<div id="oracleChat" class="oracle-chat hidden">
+  <div class="oracle-chat-inner">
+    <header class="oracle-chat-header">
+      <div class="oracle-chat-title-block">
+        <span class="oracle-chat-title">THE ORACLE</span>
+        <span class="oracle-chat-subtitle">Predictive Portfolio Interface</span>
+      </div>
+
+      <div class="oracle-header-controls">
         <div class="oracle-chat-status">
           <span class="oracle-pulse"></span>
           <span class="oracle-status-label">ONLINE</span>
         </div>
+
+        <!-- Voice toggle -->
+        <button
+          id="oracleVoiceToggle"
+          type="button"
+          class="oracle-voice-toggle"
+          aria-label="Toggle Oracle voice"
+        >
+          🔈
+        </button>
+
+        <!-- Close / minimize -->
         <button
           id="oracleChatClose"
           type="button"
@@ -438,33 +452,67 @@
         >
           ✕
         </button>
-      </header>
-
-      <div id="oracleMessages" class="oracle-messages">
-        <div class="oracle-message oracle-message-oracle">
-          <p class="oracle-message-label">SYSTEM INITIALIZED</p>
-          <p>
-            Ah… I’ve been expecting you. Sit. Let’s see what truth you’re seeking today.
-          </p>
-        </div>
       </div>
+    </header>
 
-      <form id="oracleForm" class="oracle-form">
-        <input
-          id="oracleInput"
-          type="text"
-          class="oracle-input"
-          placeholder="Ask about Abhishek, his skills, projects, or your next move…"
-          autocomplete="off"
-        />
-        <button type="submit" class="oracle-send">ENTER</button>
-      </form>
-
-      <div class="oracle-footer-hint">
-        <span>Try: “What roles fit this profile?” or “Tell me about JobFlow.”</span>
+    <div id="oracleMessages" class="oracle-messages">
+      <div class="oracle-message oracle-message-oracle">
+        <p class="oracle-message-label">SYSTEM INITIALIZED</p>
+        <p>
+          Ah… I’ve been expecting you. Sit. Let’s see what truth you’re seeking today.
+        </p>
       </div>
     </div>
+
+    <!-- Suggestion chips -->
+    <div id="oracleSuggestions" class="oracle-suggestions">
+      <button
+        type="button"
+        class="oracle-suggestion-chip"
+        data-question="What roles fit this profile?"
+      >
+        Roles that fit
+      </button>
+      <button
+        type="button"
+        class="oracle-suggestion-chip"
+        data-question="Tell me about JobFlow."
+      >
+        JobFlow
+      </button>
+      <button
+        type="button"
+        class="oracle-suggestion-chip"
+        data-question="How should a recruiter read this portfolio?"
+      >
+        Recruiter view
+      </button>
+      <button
+        type="button"
+        class="oracle-suggestion-chip"
+        data-question="Help me prepare for an interview."
+      >
+        Interview prep
+      </button>
+    </div>
+
+    <form id="oracleForm" class="oracle-form">
+      <input
+        id="oracleInput"
+        type="text"
+        class="oracle-input"
+        placeholder="Ask about Abhishek, his skills, projects, or your next move…"
+        autocomplete="off"
+      />
+      <button type="submit" class="oracle-send">ENTER</button>
+    </form>
+
+    <div class="oracle-footer-hint">
+      <span>Try: “What roles fit this profile?” or “Tell me about JobFlow.”</span>
+    </div>
   </div>
+</div>
+
 </div> <!-- end .page-wrapper -->
 <script src="script.js"></script>
 </body>
