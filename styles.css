@@ -1353,3 +1353,339 @@ body.drift-2 .stack-section {
     margin-bottom: 4px;
   }
 }
+
+/* ORACLE PANEL */
+.oracle-panel {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.oracle-window {
+  width: min(620px, 92vw);
+  background: rgba(0, 20, 12, 0.92);
+  border: 1px solid #7affc9;
+  padding: 18px 22px;
+  border-radius: 10px;
+  box-shadow: 0 0 45px rgba(0,255,156,0.4);
+  position: relative;
+}
+
+.oracle-close {
+  position: absolute;
+  right: 12px;
+  top: 10px;
+  color: #7affc9;
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+.oracle-header {
+  font-size: 1rem;
+  text-align: center;
+  letter-spacing: 0.25em;
+  margin-bottom: 12px;
+  color: #7affc9;
+}
+
+.oracle-output {
+  min-height: 120px;
+  max-height: 260px;
+  overflow-y: auto;
+  background: rgba(0,0,0,0.6);
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  color: #e0ffe7;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.oracle-form input {
+  width: 100%;
+  padding: 10px;
+  background: #000;
+  border: 1px solid #00ff9c;
+  color: #00ff9c;
+  outline: none;
+  font-family: inherit;
+}
+
+.hidden { display: none; }
+
+
+/* ========== ORACLE PORTFOLIO CHAT ========== */
+
+.oracle-toggle {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 255, 156, 0.7);
+  background: radial-gradient(circle at 0 0, rgba(0, 255, 156, 0.2), transparent 60%),
+    rgba(0, 0, 0, 0.95);
+  color: #e0ffe7;
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 0 22px rgba(0, 255, 156, 0.45);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.oracle-toggle-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00ff9c;
+  box-shadow: 0 0 12px rgba(0, 255, 156, 0.9);
+  animation: oracleDotPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes oracleDotPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.5;
+  }
+}
+
+.oracle-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.7);
+  border-color: #ffffff;
+}
+
+/* Chat window */
+.oracle-chat {
+  position: fixed;
+  right: 18px;
+  bottom: 72px;
+  z-index: 60;
+  width: 340px;
+  max-height: 70vh;
+  color: #e0ffe7;
+}
+
+.oracle-chat-inner {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 255, 156, 0.6);
+  background:
+    linear-gradient(135deg, rgba(0, 0, 0, 0.96), rgba(2, 12, 8, 0.98)),
+    radial-gradient(circle at 0 0, rgba(0, 255, 156, 0.25), transparent 60%);
+  box-shadow: 0 0 40px rgba(0, 255, 156, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+}
+
+.oracle-chat-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid rgba(0, 255, 156, 0.3);
+  background: radial-gradient(circle at 0 0, rgba(0, 255, 156, 0.26), transparent 70%);
+}
+
+.oracle-chat-title-block {
+  flex: 1;
+}
+
+.oracle-chat-title {
+  display: block;
+  font-size: 0.8rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.oracle-chat-subtitle {
+  display: block;
+  font-size: 0.7rem;
+  color: #bfffe6;
+  opacity: 0.95;
+}
+
+.oracle-chat-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: #a9ffdd;
+}
+
+.oracle-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 255, 156, 0.8);
+  box-shadow: 0 0 12px rgba(0, 255, 156, 0.9);
+  animation: oracleStatusPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes oracleStatusPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.4;
+  }
+}
+
+.oracle-chat-close {
+  border: none;
+  background: transparent;
+  color: #e0ffe7;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 2px;
+  line-height: 1;
+  opacity: 0.8;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.oracle-chat-close:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Messages */
+.oracle-messages {
+  padding: 10px 10px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.82rem;
+  max-height: 280px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.oracle-messages::-webkit-scrollbar {
+  width: 4px;
+}
+
+.oracle-messages::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 156, 0.6);
+}
+
+.oracle-message {
+  padding: 7px 9px;
+  border-radius: 8px;
+  position: relative;
+  border: 1px solid rgba(0, 255, 156, 0.35);
+  background: rgba(0, 0, 0, 0.82);
+}
+
+.oracle-message-oracle {
+  align-self: flex-start;
+  box-shadow: 0 0 12px rgba(0, 255, 156, 0.5);
+}
+
+.oracle-message-user {
+  align-self: flex-end;
+  border-color: rgba(160, 213, 255, 0.8);
+  background: rgba(4, 10, 18, 0.95);
+}
+
+.oracle-message-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #7affc9;
+  margin-bottom: 3px;
+  opacity: 0.8;
+}
+
+/* Form */
+.oracle-form {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px 9px;
+  border-top: 1px solid rgba(0, 255, 156, 0.3);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.96), transparent);
+}
+
+.oracle-input {
+  flex: 1;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 255, 156, 0.4);
+  background: rgba(0, 0, 0, 0.9);
+  color: #e0ffe7;
+  font-size: 0.78rem;
+  padding: 6px 10px;
+}
+
+.oracle-input::placeholder {
+  color: #7ebca0;
+}
+
+.oracle-input:focus {
+  outline: none;
+  border-color: #ffffff;
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.5);
+}
+
+.oracle-send {
+  border-radius: 999px;
+  border: 1px solid rgba(0, 255, 156, 0.7);
+  background: rgba(0, 255, 156, 0.18);
+  color: #e0ffe7;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease, transform 0.12s ease;
+}
+
+.oracle-send:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Footer hint */
+.oracle-footer-hint {
+  padding: 4px 10px 8px;
+  font-size: 0.7rem;
+  color: #a9ffdd;
+  opacity: 0.9;
+  border-top: 1px solid rgba(0, 255, 156, 0.28);
+  background: radial-gradient(circle at 100% 0, rgba(0, 255, 156, 0.16), transparent 60%);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .oracle-chat {
+    right: 10px;
+    left: 10px;
+    width: auto;
+  }
+
+  .oracle-toggle {
+    right: 10px;
+    left: 10px;
+    justify-content: center;
+  }
+}

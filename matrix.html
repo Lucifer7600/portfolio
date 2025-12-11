@@ -408,11 +408,64 @@
       </div>
     </div>
 
-    <!-- AGENT SMITH CLOUD -->
+
+        <!-- AGENT SMITH CLOUD -->
     <div id="smithCloud" class="smith-cloud"></div>
 
   </div>
+  <!-- ORACLE PORTFOLIO AGENT CHAT -->
+  <button id="oracleToggle" class="oracle-toggle" type="button">
+    <span class="oracle-toggle-dot"></span>
+    <span class="oracle-toggle-text">ASK THE ORACLE</span>
+  </button>
 
-  <script src="script.js"></script>
+  <div id="oracleChat" class="oracle-chat hidden">
+    <div class="oracle-chat-inner">
+      <header class="oracle-chat-header">
+        <div class="oracle-chat-title-block">
+          <span class="oracle-chat-title">THE ORACLE</span>
+          <span class="oracle-chat-subtitle">Predictive Portfolio Interface</span>
+        </div>
+        <div class="oracle-chat-status">
+          <span class="oracle-pulse"></span>
+          <span class="oracle-status-label">ONLINE</span>
+        </div>
+        <button
+          id="oracleChatClose"
+          type="button"
+          class="oracle-chat-close"
+          aria-label="Minimize Oracle chat"
+        >
+          ✕
+        </button>
+      </header>
+
+      <div id="oracleMessages" class="oracle-messages">
+        <div class="oracle-message oracle-message-oracle">
+          <p class="oracle-message-label">SYSTEM INITIALIZED</p>
+          <p>
+            Ah… I’ve been expecting you. Sit. Let’s see what truth you’re seeking today.
+          </p>
+        </div>
+      </div>
+
+      <form id="oracleForm" class="oracle-form">
+        <input
+          id="oracleInput"
+          type="text"
+          class="oracle-input"
+          placeholder="Ask about Abhishek, his skills, projects, or your next move…"
+          autocomplete="off"
+        />
+        <button type="submit" class="oracle-send">ENTER</button>
+      </form>
+
+      <div class="oracle-footer-hint">
+        <span>Try: “What roles fit this profile?” or “Tell me about JobFlow.”</span>
+      </div>
+    </div>
+  </div>
+</div> <!-- end .page-wrapper -->
+<script src="script.js"></script>
 </body>
 </html>

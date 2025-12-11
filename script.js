@@ -606,12 +606,16 @@ function handleCliCommand(raw) {
     return;
   }
 
-  if (command === "trust_oracle" || command === "oracle") {
+    if (command === "trust_oracle" || command === "oracle") {
     const section = document.getElementById("identitySection");
     printCliLine("You trust the Oracle and review core identity & skills...");
     scrollWithGlitch(section);
+    if (typeof openAgentChat === "function") {
+      openAgentChat();
+    }
     return;
   }
+
 
   if (command === "there_is_no_spoon" || command === "no spoon") {
     const section = document.getElementById("philosophySection");
@@ -837,3 +841,151 @@ function attachResistiveBehavior() {
 }
 
 attachResistiveBehavior();
+
+// ========== ORACLE PORTFOLIO CHAT ==========
+
+const oracleToggle = document.getElementById("oracleToggle");
+const oracleChat = document.getElementById("oracleChat");
+const oracleChatClose = document.getElementById("oracleChatClose");
+const oracleForm = document.getElementById("oracleForm");
+const oracleInput = document.getElementById("oracleInput");
+const oracleMessages = document.getElementById("oracleMessages");
+
+function openOracleChat() {
+  if (!oracleChat) return;
+  oracleChat.classList.remove("hidden");
+  oracleChat.classList.add("open");
+  if (oracleInput) {
+    setTimeout(() => oracleInput.focus(), 50);
+  }
+}
+
+function closeOracleChat() {
+  if (!oracleChat) return;
+  oracleChat.classList.add("hidden");
+  oracleChat.classList.remove("open");
+}
+
+function addOracleMessage(text, sender = "oracle") {
+  if (!oracleMessages) return;
+
+  const wrapper = document.createElement("div");
+  wrapper.classList.add("oracle-message");
+  if (sender === "user") {
+    wrapper.classList.add("oracle-message-user");
+  } else {
+    wrapper.classList.add("oracle-message-oracle");
+  }
+
+  const label = document.createElement("p");
+  label.classList.add("oracle-message-label");
+  label.textContent = sender === "user" ? "YOU" : "ORACLE";
+
+  const body = document.createElement("p");
+  body.innerHTML = text;
+
+  wrapper.appendChild(label);
+  wrapper.appendChild(body);
+  oracleMessages.appendChild(wrapper);
+  oracleMessages.scrollTop = oracleMessages.scrollHeight;
+}
+
+// Oracle response logic tuned to your portfolio
+function getOracleReply(rawQuestion) {
+  const q = rawQuestion.toLowerCase().trim();
+
+  // Empty / nonsense
+  if (!q) {
+    return "Silence is also a choice. Ask me about your skills, your projects, or where you should go next.";
+  }
+
+  // About Abhishek
+  if (q.includes("who are you") || q.includes("who is abhishek") || q.includes("about you")) {
+    return "In this corner of the Matrix, Abhishek is the one weaving logic into systems – a software developer focused on C#, .NET, APIs, and data that actually makes sense.";
+  }
+
+  // Skills / stack
+  if (
+    q.includes("skills") ||
+    q.includes("stack") ||
+    q.includes("tech") ||
+    q.includes(".net") ||
+    q.includes("c#") ||
+    q.includes("c sharp")
+  ) {
+    return "Abhishek’s code runs mainly in the .NET realm – C#, ASP.NET, REST APIs, SQL, and backend logic. The front-end is there too, but the real fun happens where data, rules, and behavior meet.";
+  }
+
+  // Projects / JobFlow
+  if (q.includes("jobflow")) {
+    return "JobFlow is a job-search operating system: a .NET 8 application that tracks applications, scores job matches, and exports the data to Excel. Think of it as a control panel for your job hunt, not just a spreadsheet.";
+  }
+
+  if (q.includes("habit tracker") || q.includes("habit tracking")) {
+    return "The Habit Tracker is a behavioral sandbox – Android + Firebase, where habits become records, and streaks become data you can actually act on.";
+  }
+
+  if (q.includes("project") || q.includes("projects") || q.includes("portfolio")) {
+    return "You’re looking at a curated simulation: JobFlow, Habit Tracker, and other systems that show how Abhishek designs data flows, APIs, and interfaces that stay readable even when requirements shift.";
+  }
+
+  // Roles / what jobs fit
+  if (q.includes("role") || q.includes("job") || q.includes("position") || q.includes("fit")) {
+    return "Two paths emerge:\n<br><br>• One where Abhishek grows as a backend / .NET developer, owning APIs and data models.<br>• Another where he evolves into a full-stack engineer, still anchored in C#, but shaping the whole flow from UI to database.";
+  }
+
+  // Contact
+  if (q.includes("contact") || q.includes("reach") || q.includes("email")) {
+    return "Follow the signal to the Contact section or use the email link in the hero. The right conversations rarely start by accident.";
+  }
+
+  // CV / resume
+  if (q.includes("cv") || q.includes("résumé") || q.includes("resume")) {
+    return "The résumé is the compressed version of this simulation. Use it when ATS filters the world. Use this portfolio when a human is ready to see how the system actually thinks.";
+  }
+
+  // General Oracle fallback
+  return "Every question you ask rewrites a small piece of your future. Here, the useful ones are usually about skills, projects, and the kind of work you want to wake up to. Try asking from that angle.";
+}
+
+// Event wiring
+if (oracleToggle) {
+  oracleToggle.addEventListener("click", () => {
+    if (oracleChat && oracleChat.classList.contains("hidden")) {
+      openOracleChat();
+    } else {
+      closeOracleChat();
+    }
+  });
+}
+
+if (oracleChatClose) {
+  oracleChatClose.addEventListener("click", () => {
+    closeOracleChat();
+  });
+}
+
+// ESC to close chat
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && oracleChat && !oracleChat.classList.contains("hidden")) {
+    closeOracleChat();
+  }
+});
+
+// Send question
+if (oracleForm && oracleInput) {
+  oracleForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const value = oracleInput.value.trim();
+    if (!value) return;
+
+    addOracleMessage(value, "user");
+    oracleInput.value = "";
+
+    setTimeout(() => {
+      const reply = getOracleReply(value);
+      addOracleMessage(reply, "oracle");
+    }, 350);
+  });
+}
+
