@@ -34,7 +34,6 @@ body {
   z-index: -2;
 }
 
-/* Slight blending so it feels like true background */
 #corruptionCanvas {
   z-index: -1;
   mix-blend-mode: screen;
@@ -96,6 +95,76 @@ body.time-frozen * {
   position: relative;
   min-height: 100vh;
   z-index: 10;
+}
+
+/* ========== SELF-AWARE SCROLL BANNER ========== */
+.self-aware-banner {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-120%);
+  padding: 6px 18px;
+  border-radius: 999px;
+  border: 1px solid #ff4b6f;
+  background: rgba(0, 0, 0, 0.96);
+  color: #ffb0c3;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  z-index: 30;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.self-aware-banner.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ========== IDLE OVERLAY ========== */
+.idle-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 32;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.idle-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.idle-box {
+  border: 1px solid #00ff9c;
+  padding: 20px 26px;
+  max-width: 420px;
+  text-align: center;
+  background: radial-gradient(circle at top, rgba(0, 20, 10, 0.96) 0, rgba(0, 0, 0, 0.98) 70%);
+  box-shadow: 0 0 40px rgba(0, 255, 156, 0.6);
+}
+
+.idle-title {
+  font-size: 1rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.idle-sub {
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+  color: #e0ffe7;
+}
+
+.idle-hint {
+  font-size: 0.75rem;
+  color: #a9ffdd;
 }
 
 /* ========== BOOTLOADER SCREEN ========== */
@@ -301,8 +370,23 @@ body.time-frozen * {
 .hero-role {
   font-size: 0.9rem;
   color: #d2ffed;
-  margin-bottom: 10px;
+  margin-bottom: 4px;
   max-width: 520px;
+}
+
+/* self-aware status */
+.hero-system-status {
+  font-size: 0.78rem;
+  color: #a9ffdd;
+  margin-bottom: 10px;
+}
+
+/* Progressively warp hero text when drift increases */
+body.drift-2 .hero-text-block {
+  transform: skewY(-0.4deg);
+}
+body.drift-3 .hero-text-block {
+  transform: skewY(-0.8deg) rotateZ(-0.4deg);
 }
 
 .hero-pill-row {
@@ -451,7 +535,6 @@ body.time-frozen * {
   margin-top: 10px;
 }
 
-/* Sphere animations */
 @keyframes sphereSpin {
   0% {
     transform: rotateX(12deg) rotateY(0deg);
@@ -524,7 +607,6 @@ body.time-frozen * {
   opacity: 0.7;
 }
 
-/* final identity slam */
 .identity-glitch.identity-glitch-final {
   animation: identitySlam 0.5s ease-out 1, identityGlow 1.5s ease-in-out infinite;
 }
@@ -630,6 +712,11 @@ body.time-frozen * {
   box-shadow: 0 0 26px rgba(255, 255, 255, 0.7);
   transform: translateY(-4px) scale(1.02);
   border-color: #ffffff;
+}
+
+/* Drift 2: very subtle wobble on stack section */
+body.drift-2 .stack-section {
+  transform: skewX(0.5deg);
 }
 
 /* ========== SIMULATIONS / PROJECTS ========== */
@@ -1183,6 +1270,29 @@ body.time-frozen * {
   }
   100% {
     transform: translateY(-20px) scale(1.1);
+    opacity: 0;
+  }
+}
+
+/* ========== CURSOR TRAIL (REALITY DRIFT) ========== */
+.cursor-trail {
+  position: fixed;
+  font-size: 0.8rem;
+  color: #00ff9c;
+  pointer-events: none;
+  z-index: 60;
+  transform: translate(-50%, -50%);
+  opacity: 1;
+  animation: trailFade 0.7s ease-out forwards;
+}
+
+@keyframes trailFade {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -80%) scale(0.9);
     opacity: 0;
   }
 }

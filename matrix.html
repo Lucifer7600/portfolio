@@ -29,6 +29,20 @@
 
   <div class="page-wrapper">
 
+    <!-- SELF-AWARE SCROLL WARNING -->
+    <div id="scrollWarning" class="self-aware-banner hidden">
+      Slow down. You're destabilizing the simulation.
+    </div>
+
+    <!-- IDLE / CONSCIOUSNESS OVERLAY -->
+    <div id="idleOverlay" class="idle-overlay hidden">
+      <div class="idle-box">
+        <p class="idle-title">CONNECTION LOST</p>
+        <p class="idle-sub">Attempting to re-establish consciousness…</p>
+        <p class="idle-hint">(Move your mouse or press any key to return.)</p>
+      </div>
+    </div>
+
     <!-- BOOTLOADER SEQUENCE -->
     <section id="bootScreen" class="boot-screen">
       <div class="boot-frame">
@@ -78,6 +92,11 @@
               Software Developer &amp; Programmer Analyst · Montreal, Canada
             </p>
 
+            <!-- SELF-AWARE TIME-OF-DAY GREETING -->
+            <p id="selfAwareStatus" class="hero-system-status">
+              <!-- JS will fill this with a dynamic message -->
+            </p>
+
             <div class="hero-pill-row">
               <span class="hero-pill">C# / .NET</span>
               <span class="hero-pill">REST APIs &amp; SQL</span>
@@ -101,10 +120,10 @@
 
             <!-- CHOICE-BASED STORYTELLING -->
             <div class="choice-row">
-              <button id="choiceRabbit" type="button" class="choice-btn choice-rabbit">
+              <button id="choiceRabbit" type="button" class="choice-btn choice-rabbit resistive">
                 FOLLOW THE WHITE RABBIT
               </button>
-              <button id="choiceOracle" type="button" class="choice-btn choice-oracle">
+              <button id="choiceOracle" type="button" class="choice-btn choice-oracle resistive">
                 TRUST THE ORACLE
               </button>
             </div>
@@ -185,7 +204,7 @@
               type="text"
               autocomplete="off"
               spellcheck="false"
-              placeholder="Type: help, whoami, show projects, show skills, contact, follow_white_rabbit, freeze..."
+              placeholder="Type: help, whoami, show projects, follow_white_rabbit, freeze..."
             />
           </form>
         </div>
@@ -247,7 +266,6 @@
                 <span>HTML</span><span>CSS</span><span>PHP</span><span>MySQL</span>
               </div>
               <div class="project-links">
-                <!-- TODO: replace # with real repo/demo links -->
                 <a href="https://github.com/Lucifer7600" target="_blank" rel="noreferrer">
                   GitHub Profile
                 </a>
@@ -268,7 +286,6 @@
                 <span>C#</span><span>.NET</span><span>SQL</span>
               </div>
               <div class="project-links">
-                <!-- TODO: replace with actual project link when hosted -->
                 <a href="https://github.com/Lucifer7600" target="_blank" rel="noreferrer">
                   GitHub Profile
                 </a>
@@ -289,7 +306,6 @@
                 <span>Android</span><span>Firebase</span>
               </div>
               <div class="project-links">
-                <!-- TODO: replace with repo URL like: https://github.com/Lucifer7600/HabitTrackerPrj -->
                 <a href="https://github.com/Lucifer7600" target="_blank" rel="noreferrer">
                   GitHub Profile
                 </a>
@@ -304,7 +320,6 @@
         <h2 class="section-label">PHILOSOPHY · THERE IS NO SPOON</h2>
 
         <div id="philosophyTerminal" class="terminal">
-          <!-- JS will type lines here above the cursor line -->
           <div class="terminal-line terminal-cursor-line">
             <span class="terminal-prompt">&gt;</span>
             <span class="terminal-cursor"></span>
@@ -317,10 +332,10 @@
         <h2 class="section-label">EXIT OR CONNECT</h2>
 
         <div class="pill-row">
-          <button id="pillRed" class="pill pill-red">
+          <button id="pillRed" class="pill pill-red resistive">
             RED PILL // COLLABORATE
           </button>
-          <button id="pillBlue" class="pill pill-blue">
+          <button id="pillBlue" class="pill pill-blue resistive">
             BLUE PILL // EXIT SIMULATION
           </button>
         </div>

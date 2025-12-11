@@ -30,7 +30,6 @@ function updateModeUI() {
     modeChip.textContent = cinematicMode ? "CINEMATIC MODE ACTIVE" : "NORMAL MODE ACTIVE";
     modeChip.classList.toggle("mode-chip-off", !cinematicMode);
   }
-  // dim overlays when cinematic is off so it feels different
   document.body.classList.toggle("cinematic-off", !cinematicMode);
 }
 
@@ -65,7 +64,6 @@ updateTimeUI();
 function scrollWithGlitch(targetEl) {
   if (!targetEl) return;
 
-  // if cinematic is off or overlay missing, just scroll
   if (!cinematicMode || !glitchOverlay) {
     targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
     return;
@@ -177,7 +175,6 @@ function resizeCanvases() {
 
 window.addEventListener("resize", resizeCanvases);
 
-// richer Matrix set: digits + symbols + pseudo-katakana
 const matrixChars = "01█▌░アイウエオカキクケコﾊﾋﾌﾍﾎ";
 const fontSize = 18;
 let columns = 0;
@@ -187,9 +184,8 @@ let dropSpeeds = [];
 resizeCanvases();
 
 function drawMatrix() {
-  if (timeFrozen) return; // time freeze
+  if (timeFrozen) return;
 
-  // lighter trail so the rain stays visible under sections
   matrixCtx.fillStyle = "rgba(0, 0, 0, 0.04)";
   matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
 
@@ -211,9 +207,8 @@ function drawMatrix() {
 
 setInterval(drawMatrix, 40);
 
-// White noise corruption
 function drawCorruption() {
-  if (timeFrozen) return; // time freeze
+  if (timeFrozen) return;
 
   corruptionCtx.clearRect(0, 0, corruptionCanvas.width, corruptionCanvas.height);
 
@@ -262,6 +257,25 @@ function showNextIdentityAttempt() {
 }
 
 setTimeout(showNextIdentityAttempt, 2600);
+
+// ========== SELF-AWARE TIME-OF-DAY GREETING ==========
+const selfAwareStatus = document.getElementById("selfAwareStatus");
+
+function updateSelfAwareGreeting() {
+  if (!selfAwareStatus) return;
+  const now = new Date();
+  const hour = now.getHours();
+  let greeting;
+
+  if (hour < 5) greeting = "SYSTEM NOTE: Late-night build detected. Optimization mode: Focus & silence.";
+  else if (hour < 12) greeting = "SYSTEM NOTE: Morning boot. Best time for clean commits and clear decisions.";
+  else if (hour < 18) greeting = "SYSTEM NOTE: Active hours. Perfect window for code reviews and shipping features.";
+  else greeting = "SYSTEM NOTE: Evening traces. Time for debugging, refactoring, and deeper thinking.";
+
+  selfAwareStatus.textContent = greeting;
+}
+
+updateSelfAwareGreeting();
 
 // ========== SMOOTH SCROLL (NAV + CHOICES) ==========
 document.querySelectorAll('.hero-nav-links a[href^="#"]').forEach((link) => {
@@ -339,9 +353,7 @@ projectCards.forEach((card) => {
     safePlay(audioStatic);
   });
 
-  // multi-layer reality: click into deeper "Construct" layer
   card.addEventListener("click", (e) => {
-    // don't hijack when clicking a link
     if (e.target.closest("a")) return;
     openConstructRoom(card);
   });
@@ -503,7 +515,6 @@ function spawnSmithWave() {
     span.style.top = Math.random() * 100 + "%";
     smithCloud.appendChild(span);
   }
-  // keep it from growing forever
   const maxChildren = 80;
   while (smithCloud.childElementCount > maxChildren) {
     smithCloud.removeChild(smithCloud.firstElementChild);
@@ -588,7 +599,6 @@ function handleCliCommand(raw) {
     return;
   }
 
-  // Easter eggs / secret commands
   if (command === "follow_white_rabbit" || command === "follow rabbit") {
     const section = document.getElementById("projectsSection");
     printCliLine("You follow the White Rabbit into experimental simulations...");
@@ -649,6 +659,12 @@ function handleCliCommand(raw) {
     return;
   }
 
+  // Simple "clear" command
+  if (command === "clear") {
+    cliOutput.innerHTML = "";
+    return;
+  }
+
   unknownCommandCount++;
   printCliLine("Unknown command. Type 'help' to see available commands.", "error");
   if (unknownCommandCount >= 3) {
@@ -665,7 +681,6 @@ if (cliForm && cliInput) {
     handleCliCommand(value);
   });
 
-  // optional: submit on Enter key even without form submit if needed
   cliInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -674,7 +689,151 @@ if (cliForm && cliInput) {
   });
 }
 
-// seed initial help line
 if (cliOutput) {
   printCliLine("Hacking console ready. Type 'help' to see commands.");
 }
+
+// ========== SELF-AWARE SCROLL + IDLE SYSTEM ==========
+const scrollWarning = document.getElementById("scrollWarning");
+const idleOverlay = document.getElementById("idleOverlay");
+
+let lastScrollTop = window.scrollY || 0;
+let lastScrollTime = performance.now();
+
+function showScrollWarning() {
+  if (!scrollWarning) return;
+  scrollWarning.classList.remove("hidden");
+  scrollWarning.classList.add("active");
+  setTimeout(() => {
+    scrollWarning.classList.remove("active");
+    scrollWarning.classList.add("hidden");
+  }, 2200);
+}
+
+window.addEventListener("scroll", () => {
+  const now = performance.now();
+  const current = window.scrollY || 0;
+  const delta = Math.abs(current - lastScrollTop);
+  const dt = now - lastScrollTime;
+
+  // "too fast" if moving more than 800px in under 200ms
+  if (dt < 200 && delta > 800) {
+    showScrollWarning();
+  }
+
+  lastScrollTop = current;
+  lastScrollTime = now;
+  resetIdleTimer();
+});
+
+// Idle detection
+let idleTimer = null;
+const IDLE_TIMEOUT = 25000; // 25 seconds
+
+function activateIdleState() {
+  if (!idleOverlay) return;
+  timeFrozen = true;
+  updateTimeUI();
+  idleOverlay.classList.remove("hidden");
+  idleOverlay.classList.add("active");
+}
+
+function deactivateIdleState() {
+  if (!idleOverlay) return;
+  if (!idleOverlay.classList.contains("active")) return;
+  idleOverlay.classList.remove("active");
+  setTimeout(() => {
+    idleOverlay.classList.add("hidden");
+  }, 200);
+  timeFrozen = false;
+  updateTimeUI();
+}
+
+function resetIdleTimer() {
+  if (idleTimer) clearTimeout(idleTimer);
+  deactivateIdleState();
+  idleTimer = setTimeout(activateIdleState, IDLE_TIMEOUT);
+}
+
+["mousemove", "keydown", "click", "touchstart"].forEach((evt) => {
+  window.addEventListener(evt, resetIdleTimer);
+});
+
+resetIdleTimer();
+
+// ========== REALITY DRIFT SYSTEM ==========
+let driftLevel = 0;
+let driftTimerStarted = false;
+
+function startDriftTimer() {
+  if (driftTimerStarted) return;
+  driftTimerStarted = true;
+
+  // Level up every 30 seconds, max 3
+  let level = 0;
+  const interval = setInterval(() => {
+    if (level >= 3) {
+      clearInterval(interval);
+      return;
+    }
+    level++;
+    driftLevel = level;
+    document.body.classList.add(`drift-${level}`);
+  }, 30000);
+}
+
+// Start drift once main simulation is visible
+const observer = new MutationObserver(() => {
+  if (mainSim && mainSim.classList.contains("sim-visible")) {
+    startDriftTimer();
+    observer.disconnect();
+  }
+});
+observer.observe(document.body, { attributes: true, subtree: true });
+
+// Cursor code trail (drift level 1+)
+document.addEventListener("mousemove", (e) => {
+  if (driftLevel < 1) return;
+
+  const trail = document.createElement("span");
+  trail.className = "cursor-trail";
+  trail.textContent = matrixChars.charAt(
+    Math.floor(Math.random() * matrixChars.length)
+  );
+  trail.style.left = `${e.clientX}px`;
+  trail.style.top = `${e.clientY}px`;
+  document.body.appendChild(trail);
+
+  setTimeout(() => {
+    trail.remove();
+  }, 700);
+});
+
+// Resistive buttons (drift level 3)
+function attachResistiveBehavior() {
+  const resistiveButtons = document.querySelectorAll(".resistive");
+
+  resistiveButtons.forEach((btn) => {
+    btn.addEventListener("mousemove", (e) => {
+      if (driftLevel < 3) return;
+
+      const rect = btn.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const offsetX = (x - rect.width / 2) / rect.width;
+      const offsetY = (y - rect.height / 2) / rect.height;
+
+      const moveX = -offsetX * 18;
+      const moveY = -offsetY * 12;
+
+      btn.style.transform = `translate(${moveX}px, ${moveY}px)`;
+    });
+
+    btn.addEventListener("mouseleave", () => {
+      btn.style.transform = "translate(0, 0)";
+    });
+  });
+}
+
+attachResistiveBehavior();
