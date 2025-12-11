@@ -12,6 +12,79 @@ function safePlay(audio) {
   audio.play().catch(() => {});
 }
 
+// ========== GLOBAL MODE / GLITCH / TIME FREEZE ==========
+let cinematicMode = true;
+let timeFrozen = false;
+
+const glitchOverlay = document.getElementById("glitchTransition");
+const modeToggle = document.getElementById("modeToggle");
+const modeChip = document.getElementById("modeChip");
+const timeFreezeToggle = document.getElementById("timeFreezeToggle");
+
+function updateModeUI() {
+  if (modeToggle) {
+    modeToggle.textContent = cinematicMode ? "CINEMATIC MODE: ON" : "CINEMATIC MODE: OFF";
+    modeToggle.classList.toggle("mode-toggle-off", !cinematicMode);
+  }
+  if (modeChip) {
+    modeChip.textContent = cinematicMode ? "CINEMATIC MODE ACTIVE" : "NORMAL MODE ACTIVE";
+    modeChip.classList.toggle("mode-chip-off", !cinematicMode);
+  }
+  // dim overlays when cinematic is off so it feels different
+  document.body.classList.toggle("cinematic-off", !cinematicMode);
+}
+
+function updateTimeUI() {
+  if (timeFreezeToggle) {
+    timeFreezeToggle.textContent = timeFrozen ? "TIME FREEZE: ON" : "TIME FREEZE: OFF";
+    timeFreezeToggle.classList.toggle("time-toggle-on", timeFrozen);
+  }
+  document.body.classList.toggle("time-frozen", timeFrozen);
+}
+
+if (modeToggle) {
+  modeToggle.addEventListener("click", () => {
+    cinematicMode = !cinematicMode;
+    safePlay(audioGlitch);
+    updateModeUI();
+  });
+}
+
+if (timeFreezeToggle) {
+  timeFreezeToggle.addEventListener("click", () => {
+    timeFrozen = !timeFrozen;
+    safePlay(audioStatic);
+    updateTimeUI();
+  });
+}
+
+updateModeUI();
+updateTimeUI();
+
+// helper to scroll with optional glitch transition
+function scrollWithGlitch(targetEl) {
+  if (!targetEl) return;
+
+  // if cinematic is off or overlay missing, just scroll
+  if (!cinematicMode || !glitchOverlay) {
+    targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+
+  glitchOverlay.classList.remove("hidden");
+  glitchOverlay.classList.add("active");
+  safePlay(audioGlitch);
+
+  setTimeout(() => {
+    targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 280);
+
+  setTimeout(() => {
+    glitchOverlay.classList.remove("active");
+    glitchOverlay.classList.add("hidden");
+  }, 720);
+}
+
 // ========== BOOTLOADER SEQUENCE ==========
 const bootScreen = document.getElementById("bootScreen");
 const bootLog = document.getElementById("bootLog");
@@ -22,12 +95,12 @@ const bootLines = [
   "[BOOT SEQUENCE START]",
   "loading kernel................OK",
   "mounting virtual filesystem...OK",
-  "initiating neural bridge......FAILED",
-  "attempting auto-patch.........FAILED",
-  "injecting fallback identity...FAILED",
-  "scanning for anomalies........DETECTED",
-  "ABHISHEK.EXE has bypassed system integrity.",
-  "[SYSTEM CORRUPTION: 7%]"
+  "initiating matrix profile.....OK",
+  "loading ABHISHEK.EXE..........OK",
+  "scanning developer profile....OK",
+  "exporting skills & projects...OK",
+  "MATRIX PROFILE ONLINE: Software Developer · C# /.NET · SQL",
+  "[PROFILE STATUS: READY FOR REVIEW]"
 ];
 
 let bootIndex = 0;
@@ -53,7 +126,7 @@ function runBootSequence() {
   const current = bootLines[bootIndex];
   let type = "ok";
   if (current.includes("FAILED")) type = "fail";
-  else if (current.includes("DETECTED") || current.includes("CORRUPTION")) {
+  else if (current.includes("DETECTED") || current.includes("STATUS")) {
     type = "warn";
   }
 
@@ -102,7 +175,6 @@ function resizeCanvases() {
   dropSpeeds = drops.map(() => 0.8 + Math.random() * 1.8);
 }
 
-
 window.addEventListener("resize", resizeCanvases);
 
 // richer Matrix set: digits + symbols + pseudo-katakana
@@ -115,6 +187,8 @@ let dropSpeeds = [];
 resizeCanvases();
 
 function drawMatrix() {
+  if (timeFrozen) return; // time freeze
+
   // lighter trail so the rain stays visible under sections
   matrixCtx.fillStyle = "rgba(0, 0, 0, 0.04)";
   matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
@@ -137,9 +211,10 @@ function drawMatrix() {
 
 setInterval(drawMatrix, 40);
 
-
 // White noise corruption
 function drawCorruption() {
+  if (timeFrozen) return; // time freeze
+
   corruptionCtx.clearRect(0, 0, corruptionCanvas.width, corruptionCanvas.height);
 
   for (let i = 0; i < 30; i++) {
@@ -188,16 +263,33 @@ function showNextIdentityAttempt() {
 
 setTimeout(showNextIdentityAttempt, 2600);
 
-// ========== SMOOTH SCROLL ==========
+// ========== SMOOTH SCROLL (NAV + CHOICES) ==========
 document.querySelectorAll('.hero-nav-links a[href^="#"]').forEach((link) => {
   link.addEventListener("click", (e) => {
     e.preventDefault();
     const targetId = link.getAttribute("href");
     const el = document.querySelector(targetId);
     if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollWithGlitch(el);
   });
 });
+
+const choiceRabbit = document.getElementById("choiceRabbit");
+const choiceOracle = document.getElementById("choiceOracle");
+
+if (choiceRabbit) {
+  choiceRabbit.addEventListener("click", () => {
+    const section = document.getElementById("projectsSection");
+    scrollWithGlitch(section);
+  });
+}
+
+if (choiceOracle) {
+  choiceOracle.addEventListener("click", () => {
+    const section = document.getElementById("identitySection");
+    scrollWithGlitch(section);
+  });
+}
 
 // ========== STACK HOVER ==========
 const stackItems = document.querySelectorAll(".stack-item");
@@ -219,8 +311,11 @@ stackItems.forEach((item) => {
   });
 });
 
-// ========== PROJECT CARDS BULLET-TIME ==========
+// ========== PROJECT CARDS BULLET-TIME + CONSTRUCT ROOM ==========
 const projectCards = document.querySelectorAll(".project-card");
+const constructOverlay = document.getElementById("constructOverlay");
+const constructContent = document.getElementById("constructContent");
+const constructClose = document.getElementById("constructClose");
 
 projectCards.forEach((card) => {
   const frame = card.querySelector(".project-frame");
@@ -243,6 +338,73 @@ projectCards.forEach((card) => {
   card.addEventListener("mouseenter", () => {
     safePlay(audioStatic);
   });
+
+  // multi-layer reality: click into deeper "Construct" layer
+  card.addEventListener("click", (e) => {
+    // don't hijack when clicking a link
+    if (e.target.closest("a")) return;
+    openConstructRoom(card);
+  });
+});
+
+function openConstructRoom(card) {
+  if (!constructOverlay || !constructContent) return;
+
+  const titleEl = card.querySelector(".project-title");
+  const descEl = card.querySelector(".project-desc");
+  const tagEls = card.querySelectorAll(".project-tags span");
+
+  const title = titleEl ? titleEl.textContent.trim() : "Simulation";
+  const desc = descEl ? descEl.textContent.trim() : "";
+  const tags = Array.from(tagEls)
+    .map((el) => el.textContent.trim())
+    .join(" · ");
+
+  constructContent.innerHTML = `
+    <p class="construct-label">DEEPER LAYER UNLOCKED</p>
+    <h3 class="construct-title">${title}</h3>
+    <p class="construct-body">${desc}</p>
+    <p class="construct-meta">
+      Tech stack: <span>${tags || "N/A"}</span>
+    </p>
+    <p class="construct-note">
+      This is the inner layer of this simulation. Ask me about the architecture, trade-offs,
+      data model, and how I would evolve it for a real production environment.
+    </p>
+  `;
+
+  constructOverlay.classList.remove("hidden");
+  constructOverlay.classList.add("active");
+  safePlay(audioGlitch);
+}
+
+function closeConstructRoom() {
+  if (!constructOverlay) return;
+  constructOverlay.classList.remove("active");
+  setTimeout(() => {
+    constructOverlay.classList.add("hidden");
+  }, 180);
+}
+
+if (constructClose) {
+  constructClose.addEventListener("click", closeConstructRoom);
+}
+
+if (constructOverlay) {
+  constructOverlay.addEventListener("click", (e) => {
+    if (
+      e.target === constructOverlay ||
+      e.target.classList.contains("construct-backdrop")
+    ) {
+      closeConstructRoom();
+    }
+  });
+}
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && constructOverlay && !constructOverlay.classList.contains("hidden")) {
+    closeConstructRoom();
+  }
 });
 
 // ========== MANIFESTO TERMINAL TYPING ==========
@@ -282,41 +444,237 @@ const pillRed = document.getElementById("pillRed");
 const pillBlue = document.getElementById("pillBlue");
 const contactConsole = document.getElementById("contactConsole");
 
-pillRed.addEventListener("click", () => {
-  safePlay(audioGlitch);
-  safePlay(audioStatic);
+if (pillRed) {
+  pillRed.addEventListener("click", () => {
+    safePlay(audioGlitch);
+    safePlay(audioStatic);
 
-  contactConsole.classList.remove("hidden");
-  contactConsole.scrollIntoView({ behavior: "smooth", block: "center" });
-});
+    contactConsole.classList.remove("hidden");
+    scrollWithGlitch(contactConsole);
+  });
+}
 
-pillBlue.addEventListener("click", () => {
-  safePlay(audioGlitch);
-  safePlay(audioStatic);
-  setTimeout(() => {
-    window.location.href = "https://google.com";
-  }, 900);
-});
+if (pillBlue) {
+  pillBlue.addEventListener("click", () => {
+    safePlay(audioGlitch);
+    safePlay(audioStatic);
+    setTimeout(() => {
+      window.location.href = "https://google.com";
+    }, 900);
+  });
+}
 
 // ========== CONTACT FORM SUBMIT ==========
 const contactForm = document.getElementById("contactForm");
 
-contactForm.addEventListener("submit", (e) => {
-  e.preventDefault();
+if (contactForm) {
+  contactForm.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-  const name = document.getElementById("contactName").value.trim();
-  const email = document.getElementById("contactEmail").value.trim();
-  const message = document.getElementById("contactMessage").value.trim();
+    const name = document.getElementById("contactName").value.trim();
+    const email = document.getElementById("contactEmail").value.trim();
+    const message = document.getElementById("contactMessage").value.trim();
 
-  if (!name || !email || !message) {
-    alert("The system needs all fields to route your signal.");
+    if (!name || !email || !message) {
+      alert("The system needs all fields to route your signal.");
+      return;
+    }
+
+    const subject = encodeURIComponent("Simulation Contact // ABHISHEK.EXE");
+    const body = encodeURIComponent(
+      `IDENT HANDLE: ${name}\nSIGNAL RETURN: ${email}\n\nPAYLOAD:\n${message}`
+    );
+
+    window.location.href = `mailto:abhisheklunagariya2000@gmail.com?subject=${subject}&body=${body}`;
+  });
+}
+
+// ========== AGENT SMITH MULTIPLICATION ==========
+const smithCloud = document.getElementById("smithCloud");
+let unknownCommandCount = 0;
+
+function spawnSmithWave() {
+  if (!smithCloud) return;
+  for (let i = 0; i < 10; i++) {
+    const span = document.createElement("span");
+    span.className = "smith-chip";
+    span.textContent = "AGENT.SMITH";
+    span.style.left = Math.random() * 100 + "%";
+    span.style.top = Math.random() * 100 + "%";
+    smithCloud.appendChild(span);
+  }
+  // keep it from growing forever
+  const maxChildren = 80;
+  while (smithCloud.childElementCount > maxChildren) {
+    smithCloud.removeChild(smithCloud.firstElementChild);
+  }
+  smithCloud.classList.add("active");
+  setTimeout(() => {
+    smithCloud.classList.remove("active");
+  }, 2200);
+}
+
+// ========== COMMAND-LINE INTERFACE (HACK TERMINAL) ==========
+const cliForm = document.getElementById("cliForm");
+const cliInput = document.getElementById("cliInput");
+const cliOutput = document.getElementById("cliOutput");
+
+function printCliLine(text, type = "normal") {
+  if (!cliOutput) return;
+  const line = document.createElement("div");
+  line.classList.add("cli-line");
+  if (type === "command") line.classList.add("cli-line-command");
+  if (type === "error") line.classList.add("cli-line-error");
+  line.textContent = text;
+  cliOutput.appendChild(line);
+  cliOutput.scrollTop = cliOutput.scrollHeight;
+}
+
+function handleCliCommand(raw) {
+  const input = raw.trim();
+  const command = input.toLowerCase();
+
+  if (!command) return;
+
+  printCliLine(`> ${input}`, "command");
+
+  if (["help", "?", "man"].includes(command)) {
+    printCliLine("Available commands:");
+    printCliLine("  whoami             · show brief profile");
+    printCliLine("  show skills        · jump to skills / tech stack");
+    printCliLine("  show projects      · jump to simulations / projects");
+    printCliLine("  contact            · open comm channel");
+    printCliLine("  follow_white_rabbit· go to experiments (projects)");
+    printCliLine("  trust_oracle       · go to identity & highlights");
+    printCliLine("  there_is_no_spoon  · go to philosophy layer");
+    printCliLine("  cinematic on/off   · toggle glitch transitions");
+    printCliLine("  freeze / unfreeze  · bullet-time toggle");
+    printCliLine("  clear              · clear terminal output");
     return;
   }
 
-  const subject = encodeURIComponent("Simulation Contact // ABHISHEK.EXE");
-  const body = encodeURIComponent(
-    `IDENT HANDLE: ${name}\nSIGNAL RETURN: ${email}\n\nPAYLOAD:\n${message}`
-  );
+  if (command === "whoami") {
+    printCliLine("Name: Abhishek Lunagariya (ABHISHEK.EXE)");
+    printCliLine("Role: Software Developer & Programmer Analyst");
+    printCliLine("Focus: C# / .NET, REST APIs, SQL, backend logic & data flows.");
+    return;
+  }
 
-  window.location.href = `mailto:abhisheklunagariya2000@gmail.com?subject=${subject}&body=${body}`;
-});
+  if (command === "show skills" || command === "skills") {
+    const section = document.getElementById("stackSection");
+    printCliLine("Routing view to WEAPONS OF CHOICE (skills)...");
+    scrollWithGlitch(section);
+    return;
+  }
+
+  if (
+    command === "show projects" ||
+    command === "projects" ||
+    command === "ls projects"
+  ) {
+    const section = document.getElementById("projectsSection");
+    printCliLine("Routing view to SIMULATIONS (projects)...");
+    scrollWithGlitch(section);
+    return;
+  }
+
+  if (command === "contact") {
+    const section = document.getElementById("contactSection");
+    printCliLine("Opening communication channel...");
+    scrollWithGlitch(section);
+    if (contactConsole) {
+      contactConsole.classList.remove("hidden");
+    }
+    return;
+  }
+
+  // Easter eggs / secret commands
+  if (command === "follow_white_rabbit" || command === "follow rabbit") {
+    const section = document.getElementById("projectsSection");
+    printCliLine("You follow the White Rabbit into experimental simulations...");
+    scrollWithGlitch(section);
+    return;
+  }
+
+  if (command === "trust_oracle" || command === "oracle") {
+    const section = document.getElementById("identitySection");
+    printCliLine("You trust the Oracle and review core identity & skills...");
+    scrollWithGlitch(section);
+    return;
+  }
+
+  if (command === "there_is_no_spoon" || command === "no spoon") {
+    const section = document.getElementById("philosophySection");
+    printCliLine("There is no spoon. Only the way you think about systems.");
+    scrollWithGlitch(section);
+    return;
+  }
+
+  if (command === "cinematic on" || command === "mode cinematic") {
+    cinematicMode = true;
+    updateModeUI();
+    printCliLine("Cinematic mode enabled. Glitch transitions active.");
+    return;
+  }
+
+  if (
+    command === "cinematic off" ||
+    command === "normal" ||
+    command === "mode normal"
+  ) {
+    cinematicMode = false;
+    updateModeUI();
+    printCliLine("Normal mode enabled. Transitions will be smooth only.");
+    return;
+  }
+
+  if (command === "freeze" || command === "time freeze") {
+    timeFrozen = true;
+    updateTimeUI();
+    printCliLine("Time freeze activated. Matrix rain and noise are paused.");
+    return;
+  }
+
+  if (command === "unfreeze" || command === "resume") {
+    timeFrozen = false;
+    updateTimeUI();
+    printCliLine("Time resumed. The simulation continues.");
+    return;
+  }
+
+  if (command === "construct") {
+    const section = document.getElementById("projectsSection");
+    printCliLine("Loading Construct Room. Click a project card to go deeper.");
+    scrollWithGlitch(section);
+    return;
+  }
+
+  unknownCommandCount++;
+  printCliLine("Unknown command. Type 'help' to see available commands.", "error");
+  if (unknownCommandCount >= 3) {
+    spawnSmithWave();
+  }
+}
+
+if (cliForm && cliInput) {
+  cliForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const value = cliInput.value;
+    cliInput.value = "";
+    safePlay(audioType);
+    handleCliCommand(value);
+  });
+
+  // optional: submit on Enter key even without form submit if needed
+  cliInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      cliForm.dispatchEvent(new Event("submit"));
+    }
+  });
+}
+
+// seed initial help line
+if (cliOutput) {
+  printCliLine("Hacking console ready. Type 'help' to see commands.");
+}

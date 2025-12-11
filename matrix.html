@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>ABHISHEK.EXE // System Corruption 7%</title>
+  <title>ABHISHEK.EXE // Matrix Portfolio</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -16,7 +16,10 @@
   <div class="vhs-overlay"></div>
   <div class="scanlines"></div>
 
-  <!-- CINEMATIC AUDIO (TODO: replace example.com with real URLs) -->
+  <!-- GLITCH TRANSITION OVERLAY -->
+  <div id="glitchTransition" class="glitch-transition hidden"></div>
+
+  <!-- CINEMATIC AUDIO -->
   <audio id="audioHum" src="hum.mp3" preload="auto" loop></audio>
   <audio id="audioGlitch" src="glitch.mp3" preload="auto"></audio>
   <audio id="audioStatic" src="static.mp3" preload="auto"></audio>
@@ -31,10 +34,10 @@
       <div class="boot-frame">
         <div class="boot-header">
           <span class="boot-title">NEURAL BOOTLOADER v7.3</span>
-          <span class="boot-subtitle">SYSTEM CORRUPTION: 7%</span>
+          <span class="boot-subtitle">PROFILE STATUS: ONLINE</span>
         </div>
         <div id="bootLog" class="boot-log">
-          <!-- JS will stream fake boot logs here -->
+          <!-- JS will stream boot logs here -->
         </div>
         <button id="bootOverride" class="boot-override">FORCE OVERRIDE</button>
       </div>
@@ -54,27 +57,63 @@
             <a href="#philosophySection">Approach</a>
             <a href="#contactSection">Contact</a>
           </nav>
+          <div class="hero-nav-actions">
+            <button id="modeToggle" type="button" class="mode-toggle">
+              CINEMATIC MODE: ON
+            </button>
+            <button id="timeFreezeToggle" type="button" class="time-toggle">
+              TIME FREEZE: OFF
+            </button>
+          </div>
         </div>
 
         <div class="hero-inner">
           <div class="hero-text-block">
-            <p class="hero-kicker">ANOMALY DETECTED</p>
+            <p class="hero-kicker">MATRIX PROFILE ONLINE</p>
             <h1 class="hero-title">
-              SYSTEM<br />
-              <span class="hero-title-accent">CORRUPTION 7%</span>
+              ABHISHEK<br />
+              <span class="hero-title-accent">LUNAGARIYA</span>
             </h1>
+            <p class="hero-role">
+              Software Developer &amp; Programmer Analyst · Montreal, Canada
+            </p>
+
+            <div class="hero-pill-row">
+              <span class="hero-pill">C# / .NET</span>
+              <span class="hero-pill">REST APIs &amp; SQL</span>
+              <span class="hero-pill">Java</span>
+            </div>
+
+            <div class="hero-pill-row hero-pill-row-secondary">
+              <span class="hero-pill hero-pill-ghost">JobFlow – Job Application Manager</span>
+              <span class="hero-pill hero-pill-ghost">Habit Tracker OS</span>
+              <span class="hero-pill hero-pill-ghost">Online Crime Management System</span>
+            </div>
+
             <p class="hero-subtitle">
-              Software Developer & Programmer Analyst with a strong C# /.NET, Java, REST APIs and SQL
-              background — focused on building reliable, testable, data-driven systems that behave
-              under real-world pressure.
+              I build backend logic, APIs, and data flows that are easy to reason about and maintain,
+              with a strong focus on C# /.NET, Java, REST APIs, and SQL.
             </p>
             <p class="hero-subtitle secondary">
-              I enjoy turning vague requirements into clear flows, clean code, and working features that
-              actually solve business problems.
+              I like turning vague requirements into clear flows, clean code, and working features
+              that actually solve business problems.
+            </p>
+
+            <!-- CHOICE-BASED STORYTELLING -->
+            <div class="choice-row">
+              <button id="choiceRabbit" type="button" class="choice-btn choice-rabbit">
+                FOLLOW THE WHITE RABBIT
+              </button>
+              <button id="choiceOracle" type="button" class="choice-btn choice-oracle">
+                TRUST THE ORACLE
+              </button>
+            </div>
+            <p class="choice-hint">
+              Choose your path: experiments vs career highlights.
             </p>
           </div>
 
-          <!-- Holographic code sphere placeholder -->
+          <!-- Holographic code sphere -->
           <div class="hero-sphere-wrapper">
             <div id="codeSphere" class="hero-sphere">
               <div class="sphere-ring ring-1"></div>
@@ -126,6 +165,29 @@
               <span class="meta-value">writes logic like geometry</span>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- COMMAND-LINE INTERFACE SECTION -->
+      <section id="commandSection" class="section command-section">
+        <h2 class="section-label">HACK TERMINAL · INTERACTIVE MODE</h2>
+
+        <div class="cli-wrapper">
+          <div id="modeChip" class="mode-chip">CINEMATIC MODE ACTIVE</div>
+          <div id="cliOutput" class="cli-output">
+            <!-- JS will append lines here -->
+          </div>
+          <form id="cliForm" class="cli-form">
+            <span class="cli-prompt">root@abhishek:~$</span>
+            <input
+              id="cliInput"
+              class="cli-input"
+              type="text"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="Type: help, whoami, show projects, show skills, contact, follow_white_rabbit, freeze..."
+            />
+          </form>
         </div>
       </section>
 
@@ -239,7 +301,7 @@
 
       <!-- MANIFESTO / PHILOSOPHY -->
       <section id="philosophySection" class="section philosophy-section">
-        <h2 class="section-label">APPROACH · HOW I WORK</h2>
+        <h2 class="section-label">PHILOSOPHY · THERE IS NO SPOON</h2>
 
         <div id="philosophyTerminal" class="terminal">
           <!-- JS will type lines here above the cursor line -->
@@ -318,6 +380,22 @@
         <p>© 2025 ABHISHEK.EXE · Software Developer & Programmer Analyst · Montreal, Canada.</p>
       </footer>
     </main>
+
+    <!-- CONSTRUCT ROOM OVERLAY (MULTI-LAYER REALITY) -->
+    <div id="constructOverlay" class="construct-overlay hidden">
+      <div class="construct-backdrop"></div>
+      <div class="construct-inner">
+        <button id="constructClose" type="button" class="construct-close">×</button>
+        <div class="construct-header">CONSTRUCT ROOM // DEEP SIMULATION</div>
+        <div id="constructContent" class="construct-content">
+          <!-- JS will inject project details here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- AGENT SMITH CLOUD -->
+    <div id="smithCloud" class="smith-cloud"></div>
+
   </div>
 
   <script src="script.js"></script>
