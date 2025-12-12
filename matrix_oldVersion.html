@@ -409,7 +409,11 @@
     </div>
 
 
-    <!-- ORACLE PORTFOLIO AGENT CHAT -->
+        <!-- AGENT SMITH CLOUD -->
+    <div id="smithCloud" class="smith-cloud"></div>
+
+  </div>
+  <!-- ORACLE PORTFOLIO AGENT CHAT -->
     <button id="oracleToggle" class="oracle-toggle" type="button">
       <span class="oracle-toggle-dot"></span>
       <span class="oracle-toggle-text">ASK THE ORACLE</span>
@@ -429,36 +433,67 @@
               <span class="oracle-status-label">ONLINE</span>
             </div>
 
+            <!-- Voice toggle -->
             <button
               id="oracleVoiceToggle"
               type="button"
-              class="oracle-voice-toggle muted"
+              class="oracle-voice-toggle"
               aria-label="Toggle Oracle voice"
-              title="Voice: muted"
-            >🔇</button>
+            >
+              🔈
+            </button>
 
+            <!-- Close / minimize -->
             <button
               id="oracleChatClose"
               type="button"
               class="oracle-chat-close"
               aria-label="Minimize Oracle chat"
-              title="Minimize"
-            >✕</button>
+            >
+              ✕
+            </button>
           </div>
         </header>
 
         <div id="oracleMessages" class="oracle-messages">
           <div class="oracle-message oracle-message-oracle">
             <p class="oracle-message-label">SYSTEM INITIALIZED</p>
-            <p>Ah… I’ve been expecting you. Sit. Let’s see what truth you’re seeking today.</p>
+            <p>
+              Ah… I’ve been expecting you. Sit. Let’s see what truth you’re seeking today.
+            </p>
           </div>
         </div>
 
+        <!-- Suggestion chips -->
         <div id="oracleSuggestions" class="oracle-suggestions">
-          <button type="button" class="oracle-suggestion-chip" data-q="What are Abhishek’s core skills?">Skills</button>
-          <button type="button" class="oracle-suggestion-chip" data-q="Which projects should I look at first?">Projects</button>
-          <button type="button" class="oracle-suggestion-chip" data-q="If I hire Abhishek, what’s his working style?">How to work with you</button>
-          <button type="button" class="oracle-suggestion-chip" data-q="What roles fit this profile best?">Best-fit roles</button>
+          <button
+            type="button"
+            class="oracle-suggestion-chip"
+            data-question="What roles fit this profile?"
+          >
+            Roles that fit
+          </button>
+          <button
+            type="button"
+            class="oracle-suggestion-chip"
+            data-question="Tell me about your skills stack."
+          >
+            Skills
+          </button>
+          <button
+            type="button"
+            class="oracle-suggestion-chip"
+            data-question="Tell me about your projects."
+          >
+            Projects
+          </button>
+          <button
+            type="button"
+            class="oracle-suggestion-chip"
+            data-question="How should I work with you?"
+          >
+            How to work with you
+          </button>
         </div>
 
         <form id="oracleForm" class="oracle-form">
@@ -478,12 +513,7 @@
       </div>
     </div>
 
-
-    <!-- AGENT SMITH CLOUD -->
-    <div id="smithCloud" class="smith-cloud"></div>
-
-  </div>
-
-  <script src="script.js"></script>
+</div> <!-- end .page-wrapper -->
+<script src="script.js"></script>
 </body>
 </html>
