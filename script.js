@@ -16,6 +16,18 @@ function safePlay(audio) {
 let cinematicMode = true;
 let timeFrozen = false;
 
+// Extra intensity flag for matrix rain during section transitions
+let transitionRainBoost = 0;
+let transitionRainTimer = null;
+
+function triggerTransitionRain() {
+  transitionRainBoost = 1;
+  if (transitionRainTimer) clearTimeout(transitionRainTimer);
+  transitionRainTimer = setTimeout(() => {
+    transitionRainBoost = 0;
+  }, 1100); // ~1.1s burst
+}
+
 const glitchOverlay = document.getElementById("glitchTransition");
 const modeToggle = document.getElementById("modeToggle");
 const modeChip = document.getElementById("modeChip");
@@ -64,6 +76,9 @@ updateTimeUI();
 function scrollWithGlitch(targetEl) {
   if (!targetEl) return;
 
+  // Trigger a short burst in the background rain
+  triggerTransitionRain();
+
   if (!cinematicMode || !glitchOverlay) {
     targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
     return;
@@ -82,6 +97,7 @@ function scrollWithGlitch(targetEl) {
     glitchOverlay.classList.add("hidden");
   }, 720);
 }
+
 
 // ========== BOOTLOADER SEQUENCE ==========
 const bootScreen = document.getElementById("bootScreen");
@@ -181,31 +197,107 @@ let columns = 0;
 let drops = [];
 let dropSpeeds = [];
 
+/* Rain pulse + analysis state */
+let matrixPulse = 0;          // small reply pulse
+let matrixDeepPulse = 0;      // deep pulse for long answers
+let oracleAnalysisMode = false;
+let oracleChatRect = null;    // updated when analysis mode is active
+
 resizeCanvases();
 
 function drawMatrix() {
   if (timeFrozen) return;
 
+  // If analysis mode is on, keep track of the chat box position
+  if (oracleAnalysisMode && typeof oracleChat !== "undefined" && oracleChat) {
+    if (!oracleChat.classList.contains("hidden")) {
+      oracleChatRect = oracleChat.getBoundingClientRect();
+    } else {
+      oracleChatRect = null;
+    }
+  } else {
+    oracleChatRect = null;
+  }
+
+  // Slight fade to keep trails
   matrixCtx.fillStyle = "rgba(0, 0, 0, 0.04)";
   matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
 
-  matrixCtx.fillStyle = "#00ff9c";
+  // Decay pulses over time
+  matrixPulse *= 0.94;
+  matrixDeepPulse *= 0.9;
+
+  const pulseFactor = 1 + matrixPulse * 0.8 + matrixDeepPulse * 1.3;
+
   matrixCtx.font = fontSize + "px monospace";
 
   drops.forEach((y, i) => {
     const text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
     const x = i * fontSize;
-    matrixCtx.fillText(text, x, y * fontSize);
+    const pixelY = y * fontSize;
 
-    if (y * fontSize > matrixCanvas.height && Math.random() > 0.975) {
+    // Base green, boosted during pulses
+    const baseAlpha = 0.7 + matrixDeepPulse * 0.3;
+    matrixCtx.fillStyle = `rgba(0, 255, 156, ${Math.min(1, baseAlpha)})`;
+    let speed = dropSpeeds[i] * pulseFactor;
+
+    // Analysis mode: bend / slow rain around chat box region
+    if (oracleAnalysisMode && oracleChatRect) {
+      const pad = 24;
+
+      const inX =
+        x > oracleChatRect.left - pad && x < oracleChatRect.right + pad;
+      const inY =
+        pixelY > oracleChatRect.top - pad && pixelY < oracleChatRect.bottom + pad;
+
+      if (inX && inY) {
+        // "Curve" effect: slow drops and slightly jitter
+        speed = dropSpeeds[i] * 0.25;
+        matrixCtx.fillStyle = `rgba(0, 255, 156, ${Math.min(
+          1,
+          baseAlpha * 0.5
+        )})`;
+      }
+    }
+
+    matrixCtx.fillText(text, x, pixelY);
+
+    if (pixelY > matrixCanvas.height && Math.random() > 0.975) {
       drops[i] = Math.random() * -10;
     } else {
-      drops[i] = y + dropSpeeds[i];
+      drops[i] = y + speed;
     }
   });
 }
 
 setInterval(drawMatrix, 40);
+// Trigger a small rain pulse (used on any Oracle reply)
+function triggerMatrixPulse(intensity = 1) {
+  matrixPulse = Math.min(1, matrixPulse + 0.4 * intensity);
+}
+
+// Trigger a deeper, longer pulse (used on long Oracle replies)
+function triggerDeepMatrixPulse() {
+  matrixDeepPulse = 1;
+  triggerMatrixPulse(1.2);
+}
+
+// Turn analysis mode on for a short window so rain bends around the chat box
+let oracleAnalysisTimer = null;
+function enterOracleAnalysisMode(durationMs = 4500) {
+  oracleAnalysisMode = true;
+  if (oracleChat) {
+    oracleChat.classList.add("oracle-analysis-mode");
+  }
+  if (oracleAnalysisTimer) clearTimeout(oracleAnalysisTimer);
+
+  oracleAnalysisTimer = setTimeout(() => {
+    oracleAnalysisMode = false;
+    if (oracleChat) {
+      oracleChat.classList.remove("oracle-analysis-mode");
+    }
+  }, durationMs);
+}
 
 function drawCorruption() {
   if (timeFrozen) return;
@@ -765,6 +857,56 @@ function resetIdleTimer() {
 
 resetIdleTimer();
 
+// ========== SECTION REVEAL / ACTIVE NAV / BINARY BURSTS ==========
+const observedSections = document.querySelectorAll(".section");
+const heroHeader = document.querySelector(".hero");
+const navLinks = document.querySelectorAll(".hero-nav-links a");
+let currentActiveSectionId = null;
+
+function setActiveNav(sectionId) {
+  if (!sectionId) return;
+  navLinks.forEach((link) => {
+    const href = link.getAttribute("href");
+    const targetId = href && href.startsWith("#") ? href.slice(1) : null;
+    link.classList.toggle("active", targetId === sectionId);
+  });
+}
+
+const revealTargets = [];
+
+if (heroHeader) revealTargets.push(heroHeader);
+observedSections.forEach((sec) => revealTargets.push(sec));
+
+if (revealTargets.length > 0) {
+  const sectionObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+
+        // Smoothly reveal element
+        entry.target.classList.add("section-visible");
+
+        const id = entry.target.id;
+        if (id && id !== currentActiveSectionId) {
+          currentActiveSectionId = id;
+
+          // Highlight corresponding nav link
+          setActiveNav(id);
+
+          // And intensify rain when the main section changes
+          triggerTransitionRain();
+        }
+      });
+    },
+    {
+      threshold: 0.45 // "mostly" in view
+    }
+  );
+
+  revealTargets.forEach((el) => sectionObserver.observe(el));
+}
+
+
 // ========== REALITY DRIFT SYSTEM ==========
 let driftLevel = 0;
 let driftTimerStarted = false;
@@ -847,68 +989,13 @@ attachResistiveBehavior();
 const oracleToggle = document.getElementById("oracleToggle");
 const oracleChat = document.getElementById("oracleChat");
 const oracleChatClose = document.getElementById("oracleChatClose");
+const oracleForm = document.getElementById("oracleForm");
+const oracleInput = document.getElementById("oracleInput");
 const oracleMessages = document.getElementById("oracleMessages");
-const oracleVoiceToggle = document.getElementById("oracleVoiceToggle");
-const oracleSuggestions = document.getElementById("oracleSuggestions");
 
-// Make sure we always bind to the chat widget form/input (not the old overlay)
-const oracleForm =
-  oracleChat && oracleChat.querySelector("form")
-    ? oracleChat.querySelector("form")
-    : null;
-const oracleInput =
-  oracleChat && oracleChat.querySelector("input")
-    ? oracleChat.querySelector("input")
-    : null;
+let oracleTypingEl = null;
 
-// ------- Voice (text-to-speech) setup -------
-
-let oracleVoiceEnabled = false;
-const oracleSpeechSupported = "speechSynthesis" in window;
-
-function stripHtml(html) {
-  const div = document.createElement("div");
-  div.innerHTML = html;
-  return div.textContent || div.innerText || "";
-}
-
-function speakOracle(text) {
-  if (!oracleVoiceEnabled || !oracleSpeechSupported) return;
-
-  const plain = stripHtml(text);
-  if (!plain) return;
-
-  // Stop any current speech
-  window.speechSynthesis.cancel();
-
-  const utterance = new SpeechSynthesisUtterance(plain);
-  utterance.rate = 1.02;
-  utterance.pitch = 1;
-  utterance.volume = 1;
-  window.speechSynthesis.speak(utterance);
-}
-
-if (oracleVoiceToggle) {
-  if (!oracleSpeechSupported) {
-    // Hide toggle if browser doesn't support TTS
-    oracleVoiceToggle.style.display = "none";
-  } else {
-    // Initial state: muted (🔈)
-    oracleVoiceToggle.textContent = "🔈";
-
-    oracleVoiceToggle.addEventListener("click", () => {
-      oracleVoiceEnabled = !oracleVoiceEnabled;
-      oracleVoiceToggle.classList.toggle("muted", !oracleVoiceEnabled);
-      oracleVoiceToggle.textContent = oracleVoiceEnabled ? "🔊" : "🔈";
-
-      if (!oracleVoiceEnabled) {
-        window.speechSynthesis.cancel();
-      }
-    });
-  }
-}
-
-// ------- Chat open/close -------
+// --- UI helpers ---
 
 function openOracleChat() {
   if (!oracleChat) return;
@@ -947,51 +1034,64 @@ function addOracleMessage(text, sender = "oracle") {
   wrapper.appendChild(body);
   oracleMessages.appendChild(wrapper);
   oracleMessages.scrollTop = oracleMessages.scrollHeight;
-
-  if (sender === "oracle") {
-    speakOracle(text);
-  }
 }
 
-// Oracle response logic tuned to your portfolio
+// Flicker overlay behind chat
+function triggerOracleFlicker(intensity = "normal") {
+  if (!oracleChat) return;
+  const inner = oracleChat.querySelector(".oracle-chat-inner");
+  if (!inner) return;
+
+  inner.classList.remove("oracle-flicker-deep");
+  inner.classList.add("oracle-flicker-active");
+
+  if (intensity === "deep") {
+    inner.classList.add("oracle-flicker-deep");
+  }
+
+  setTimeout(() => {
+    inner.classList.remove("oracle-flicker-active", "oracle-flicker-deep");
+  }, intensity === "deep" ? 420 : 260);
+}
+
+// Typing indicator
+function showOracleTyping() {
+  if (!oracleMessages) return;
+  hideOracleTyping();
+
+  oracleTypingEl = document.createElement("div");
+  oracleTypingEl.className = "oracle-typing";
+  oracleTypingEl.innerHTML = `
+    <span class="oracle-message-label">ORACLE</span>
+    <span class="oracle-typing-text">…decoding your question</span>
+    <span class="oracle-typing-dots">
+      <span></span><span></span><span></span>
+    </span>
+  `;
+
+  oracleMessages.appendChild(oracleTypingEl);
+  oracleMessages.scrollTop = oracleMessages.scrollHeight;
+}
+
+function hideOracleTyping() {
+  if (oracleTypingEl && oracleTypingEl.parentNode) {
+    oracleTypingEl.parentNode.removeChild(oracleTypingEl);
+  }
+  oracleTypingEl = null;
+}
+
+// Oracle response logic (same content as before)
 function getOracleReply(rawQuestion) {
   const q = rawQuestion.toLowerCase().trim();
 
-  // Empty / nonsense
   if (!q) {
     return "Silence is also a choice. Ask me about your skills, your projects, or where you should go next.";
   }
 
-  // About Abhishek
-  if (
-    q.includes("who are you") ||
-    q.includes("who is abhishek") ||
-    q.includes("about you")
-  ) {
+  if (q.includes("who are you") || q.includes("who is abhishek") || q.includes("about you")) {
     return "In this corner of the Matrix, Abhishek is the one weaving logic into systems – a software developer focused on C#, .NET, APIs, and data that actually makes sense.";
   }
 
-  // Recruiter / hiring view
-  if (
-    q.includes("recruiter") ||
-    q.includes("hiring manager") ||
-    q.includes("screening") ||
-    q.includes("shortlist")
-  ) {
-    return "Imagine you’re the recruiter inside this simulation:<br><br>• You’d notice consistent experience with C#, .NET, SQL, and supporting real users.<br>• You’d see projects like JobFlow and Habit Tracker that solve real problems, not just tutorial exercises.<br><br>Read this portfolio as evidence of how Abhishek thinks under changing requirements.";
-  }
-
-  // Interview prep
-  if (q.includes("interview prep") || (q.includes("interview") && q.includes("prepare"))) {
-    return "Two paths for your next interview:<br><br>• Technical – be ready to walk through JobFlow and Habit Tracker: why they were built, key design choices, and what you’d improve next.<br>• Behavioral – tell stories about debugging production issues, learning new tools fast, and working with non-technical stakeholders.<br><br>If you want, ask me for 'JobFlow talking points' or 'habit tracker story' and I’ll outline them.";
-  }
-
-  // Strengths / weaknesses
-  if (q.includes("strength") || q.includes("weakness")) {
-    return "Strengths: ownership of backend logic, clean data models, and the patience to debug messy systems.<br>“Weakness”: saying yes to too many interesting problems at once – now managed by prioritizing impact first, curiosity second.";
-  }
-
-  // Skills / stack
   if (
     q.includes("skills") ||
     q.includes("stack") ||
@@ -1003,7 +1103,6 @@ function getOracleReply(rawQuestion) {
     return "Abhishek’s code runs mainly in the .NET realm – C#, ASP.NET, REST APIs, SQL, and backend logic. The front-end is there too, but the real fun happens where data, rules, and behavior meet.";
   }
 
-  // Projects / JobFlow
   if (q.includes("jobflow")) {
     return "JobFlow is a job-search operating system: a .NET 8 application that tracks applications, scores job matches, and exports the data to Excel. Think of it as a control panel for your job hunt, not just a spreadsheet.";
   }
@@ -1016,27 +1115,22 @@ function getOracleReply(rawQuestion) {
     return "You’re looking at a curated simulation: JobFlow, Habit Tracker, and other systems that show how Abhishek designs data flows, APIs, and interfaces that stay readable even when requirements shift.";
   }
 
-  // Roles / what jobs fit
   if (q.includes("role") || q.includes("job") || q.includes("position") || q.includes("fit")) {
-    return "Two paths emerge:<br><br>• One where Abhishek grows as a backend / .NET developer, owning APIs and data models.<br>• Another where he evolves into a full-stack engineer, still anchored in C#, but shaping the whole flow from UI to database.";
+    return "Two paths emerge:\n<br><br>• One where Abhishek grows as a backend / .NET developer, owning APIs and data models.<br>• Another where he evolves into a full-stack engineer, still anchored in C#, but shaping the whole flow from UI to database.";
   }
 
-  // Contact
   if (q.includes("contact") || q.includes("reach") || q.includes("email")) {
     return "Follow the signal to the Contact section or use the email link in the hero. The right conversations rarely start by accident.";
   }
 
-  // CV / resume
   if (q.includes("cv") || q.includes("résumé") || q.includes("resume")) {
     return "The résumé is the compressed version of this simulation. Use it when ATS filters the world. Use this portfolio when a human is ready to see how the system actually thinks.";
   }
 
-  // General Oracle fallback
   return "Every question you ask rewrites a small piece of your future. Here, the useful ones are usually about skills, projects, and the kind of work you want to wake up to. Try asking from that angle.";
 }
 
-// ------- Event wiring -------
-
+// Event wiring
 if (oracleToggle) {
   oracleToggle.addEventListener("click", () => {
     if (oracleChat && oracleChat.classList.contains("hidden")) {
@@ -1060,7 +1154,7 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// Send question
+// Send question: typing + rain pulses + analysis mode
 if (oracleForm && oracleInput) {
   oracleForm.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -1070,27 +1164,34 @@ if (oracleForm && oracleInput) {
     addOracleMessage(value, "user");
     oracleInput.value = "";
 
+    // small immediate pulse when user sends
+    triggerMatrixPulse(0.6);
+
+    // show typing
+    showOracleTyping();
+
+    // thinking time based on question length
+    const thinkingTime = Math.max(400, Math.min(2000, 220 + value.length * 12));
+
     setTimeout(() => {
       const reply = getOracleReply(value);
+      hideOracleTyping();
+
+      // long answers trigger deeper pulse + analysis mode
+      const plainReply = reply.replace(/<br\s*\/?>/gi, " ");
+      const isLong = plainReply.length > 260;
+
+      if (isLong) {
+        triggerDeepMatrixPulse();
+        enterOracleAnalysisMode(5500);
+        triggerOracleFlicker("deep");
+      } else {
+        triggerMatrixPulse(0.8);
+        triggerOracleFlicker("normal");
+      }
+
       addOracleMessage(reply, "oracle");
-    }, 350);
-  });
-}
-
-// Suggestion chips → auto-ask
-if (oracleSuggestions && oracleForm && oracleInput) {
-  oracleSuggestions.addEventListener("click", (event) => {
-    const chip = event.target.closest(".oracle-suggestion-chip");
-    if (!chip) return;
-
-    const question = chip.getAttribute("data-question");
-    if (!question) return;
-
-    oracleInput.value = question;
-    oracleInput.focus();
-    oracleForm.dispatchEvent(
-      new Event("submit", { cancelable: true, bubbles: true })
-    );
+    }, thinkingTime);
   });
 }
 
